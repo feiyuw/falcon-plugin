@@ -7,6 +7,7 @@ from kafka.client import KafkaClient
 
 
 ENDPOINT = socket.getfqdn()
+# ENDPOINT = 'kafka-1.prismcdn.internal'
 SERVER = '%s:9092' % ENDPOINT
 STEP = 60
 TYPE_GAUGE = 'GAUGE'
@@ -19,23 +20,34 @@ class KafkaMetrics(object):
 
     def run(self):
         data = []
-        data.append(self.get_brokers_total())
-        data.append(self.get_topics_total())
+        for collector in [getattr(self, f) for f in dir(self) if f.startswith('get_')]:
+            items = collector()
+            if isinstance(items, dict):
+                data.append(items)
+            else:
+                for item in items:
+                    data.append(item)
 
         print json.dumps(data)
 
     def get_brokers_total(self):
         metric = 'kafka.brokers.total'
 
-        return self._build_metric(metric,
-                len(self.cluster.brokers()))
+        return self._build_metric(metric, len(self.cluster.brokers()))
 
     def get_topics_total(self):
         metric = 'kafka.topics.total'
 
-        return self._build_metric(metric,
-                len(filter(lambda t: t!='__consumer_offsets',
-                    self.cluster.topics())))
+        return self._build_metric(metric, len(self.cluster.topics()))
+
+    def get_partitions_for_topic(self):
+        metric = 'kafka.partitions.count'
+        for topic in self.cluster.topics():
+            if topic in ('__consumer_offsets', ):
+                continue
+            yield self._build_metric(metric,
+                    len(self.cluster.partitions_for_topic(topic)),
+                    tags='topic='+topic)
 
     def _build_metric(self, metric, value, counter_type=TYPE_GAUGE, tags=''):
         return {
