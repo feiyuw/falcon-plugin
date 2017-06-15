@@ -6,8 +6,8 @@ import socket
 from kafka.client import KafkaClient
 
 
-SERVER = 'localhost:9092'
 ENDPOINT = socket.getfqdn()
+SERVER = '%s:9092' % ENDPOINT
 STEP = 60
 TYPE_GAUGE = 'GAUGE'
 
@@ -34,7 +34,8 @@ class KafkaMetrics(object):
         metric = 'kafka.topics.total'
 
         return self._build_metric(metric,
-                len(self.cluster.topics()))
+                len(filter(lambda t: t!='__consumer_offsets',
+                    self.cluster.topics())))
 
     def _build_metric(self, metric, value, counter_type=TYPE_GAUGE, tags=''):
         return {
