@@ -64,7 +64,8 @@ class KafkaMetrics(object):
         # 'select-rate': 0.0},
         for k, v in metrics.get('consumer-metrics', {}).iteritems():
             metric = 'kafka.consumer.' + k.replace('-', '_')
-            yield self._build_metric(metric, v)
+            value = v > 0 and v or 0.0
+            yield self._build_metric(metric, value)
 
     def get_producer_metrics(self):
         metrics = self.producer.metrics()
@@ -104,7 +105,8 @@ class KafkaMetrics(object):
         # 'select-rate': 0.054297494580905235},
         for k, v in metrics.get('producer-metrics', {}).iteritems():
             metric = 'kafka.producer.' + k.replace('-', '_')
-            yield self._build_metric(metric, v)
+            value = v > 0 and v or 0.0
+            yield self._build_metric(metric, value)
 
     def _build_metric(self, metric, value, counter_type=TYPE_GAUGE, tags=''):
         return {
