@@ -4,10 +4,11 @@ import json
 import time
 import socket
 from kafka.client import KafkaClient
+from kafka.producer import KafkaProducer
+from kafka.consumer import KafkaConsumer
 
 
 ENDPOINT = socket.getfqdn()
-# ENDPOINT = 'kafka-1.prismcdn.internal'
 SERVER = '%s:9092' % ENDPOINT
 STEP = 60
 TYPE_GAUGE = 'GAUGE'
@@ -17,6 +18,8 @@ class KafkaMetrics(object):
     def __init__(self):
         self.client = KafkaClient(bootstrap_servers=SERVER)
         self.cluster = self.client.cluster
+        self.producer = KafkaProducer(bootstrap_servers=SERVER)
+        self.consumer = KafkaConsumer(bootstrap_servers=SERVER)
 
     def run(self):
         data = []
@@ -24,7 +27,7 @@ class KafkaMetrics(object):
             items = collector()
             if isinstance(items, dict):
                 data.append(items)
-            else:
+            else: # iterator
                 for item in items:
                     data.append(item)
 
@@ -40,14 +43,68 @@ class KafkaMetrics(object):
 
         return self._build_metric(metric, len(self.cluster.topics()))
 
-    def get_partitions_for_topic(self):
-        metric = 'kafka.partitions.count'
-        for topic in self.cluster.topics():
-            if topic in ('__consumer_offsets', ):
-                continue
-            yield self._build_metric(metric,
-                    len(self.cluster.partitions_for_topic(topic)),
-                    tags='topic='+topic)
+    def get_consumer_metrics(self):
+        metrics = self.consumer.metrics()
+        # 'consumer-metrics': {'connection-close-rate': 0.0,
+        # 'connection-count': 1.0,
+        # 'connection-creation-rate': 0.0,
+        # 'incoming-byte-rate': 0.0,
+        # 'io-ratio': 0.0,
+        # 'io-time-ns-avg': 0.0,
+        # 'io-wait-ratio': 0.0,
+        # 'io-wait-time-ns-avg': 0.0,
+        # 'network-io-rate': 0.0,
+        # 'outgoing-byte-rate': 0.0,
+        # 'request-latency-avg': 0.0,
+        # 'request-latency-max': -inf,
+        # 'request-rate': 0.0,
+        # 'request-size-avg': 0.0,
+        # 'request-size-max': -inf,
+        # 'response-rate': 0.0,
+        # 'select-rate': 0.0},
+        for k, v in metrics.get('consumer-metrics', {}).iteritems():
+            metric = 'kafka.consumer.' + k.replace('-', '_')
+            yield self._build_metric(metric, v)
+
+    def get_producer_metrics(self):
+        metrics = self.producer.metrics()
+        # 'producer-metrics': {'batch-size-avg': 0.0,
+        # 'batch-size-max': -inf,
+        # 'bufferpool-wait-ratio': 0.0,
+        # 'byte-rate': 0.0,
+        # 'compression-rate-avg': 0.0,
+        # 'connection-close-rate': 0.0,
+        # 'connection-count': 1.0,
+        # 'connection-creation-rate': 0.0,
+        # 'incoming-byte-rate': 0.0,
+        # 'io-ratio': 7.385267125376526e-06,
+        # 'io-time-ns-avg': 136017.7993774414,
+        # 'io-wait-ratio': 1.6298991923996782,
+        # 'io-wait-time-ns-avg': 30019315600.395203,
+        # 'metadata-age': 186.95360986328126,
+        # 'network-io-rate': 0.0,
+        # 'outgoing-byte-rate': 0.0,
+        # 'produce-throttle-time-avg': 0.0,
+        # 'produce-throttle-time-max': -inf,
+        # 'record-error-rate': 0.0,
+        # 'record-queue-time-avg': 0.0,
+        # 'record-queue-time-max': -inf,
+        # 'record-retry-rate': 0.0,
+        # 'record-send-rate': 0.0,
+        # 'record-size-avg': 0.0,
+        # 'record-size-max': -inf,
+        # 'records-per-request-avg': 0.0,
+        # 'request-latency-avg': 0.0,
+        # 'request-latency-max': -inf,
+        # 'request-rate': 0.0,
+        # 'request-size-avg': 0.0,
+        # 'request-size-max': -inf,
+        # 'requests-in-flight': 0.0,
+        # 'response-rate': 0.0,
+        # 'select-rate': 0.054297494580905235},
+        for k, v in metrics.get('producer-metrics', {}).iteritems():
+            metric = 'kafka.producer.' + k.replace('-', '_')
+            yield self._build_metric(metric, v)
 
     def _build_metric(self, metric, value, counter_type=TYPE_GAUGE, tags=''):
         return {
