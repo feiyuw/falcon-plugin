@@ -10,6 +10,7 @@ import socket
 ENDPOINT = socket.getfqdn()
 STEP = 60
 TYPE_GAUGE = 'GAUGE'
+IGNORED_PPID = (1, 2)
 
 _PID_PTN = re.compile(r'^\d+$')
 
@@ -32,6 +33,10 @@ class ProcessMonitor(object):
             proc_name, fd_size = None, None
             with open('/proc/%s/status' % pid) as fp:
                 for line in fp:
+                    if line.startswith('PPid:'):
+                        ppid = int(line.split(':')[1].strip())
+                        if ppid in IGNORED_PPID:
+                            continue
                     if line.startswith('Name:'):
                         proc_name = line.split(':')[1].strip()
                     if line.startswith('FDSize:'):
