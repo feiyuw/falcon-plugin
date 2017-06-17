@@ -24,6 +24,8 @@ class ProcessMonitor(object):
     def get_fd(self):
         metric = 'process.fd'
 
+        groups = {}
+
         for pid in os.listdir('/proc'):
             if not _PID_PTN.match(pid) or not os.path.exists('/proc/%s/status' % pid):
                 continue
@@ -35,15 +37,18 @@ class ProcessMonitor(object):
                     if line.startswith('FDSize:'):
                         fd_size = int(line.split(':')[1].strip())
             if proc_name is not None and fd_size is not None:
-                yield {
-                        'metric': metric,
-                        'endpoint': ENDPOINT,
-                        'timestamp': int(time.time()),
-                        'step': STEP,
-                        'value': fd_size,
-                        'counterType': TYPE_GAUGE,
-                        'tags': 'name='+proc_name
-                        }
+                groups[proc_name] = groups.get(proc_name, 0) + fd_size
+
+        for proc_name, fd_size in groups.iteritems():
+            yield {
+                    'metric': metric,
+                    'endpoint': ENDPOINT,
+                    'timestamp': int(time.time()),
+                    'step': STEP,
+                    'value': fd_size,
+                    'counterType': TYPE_GAUGE,
+                    'tags': 'name='+proc_name
+                    }
 
 
 ProcessMonitor().run()
