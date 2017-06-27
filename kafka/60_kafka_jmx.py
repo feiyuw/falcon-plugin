@@ -22,6 +22,7 @@ OBJECT_NAMES = {
         'kafka.server:type=ReplicaManager,name=UnderReplicatedPartitions:Value': 'kafka.replica.UnderReplicatedPartitions',
         'kafka.server:type=ReplicaManager,name=IsrShrinksPerSec:Count': 'kafka.replica.IsrShrinksPerSec.count',
         'kafka.server:type=ReplicaManager,name=IsrExpandsPerSec:Count': 'kafka.replica.IsrExpandsPerSec.count',
+        'kafka.server:type=ReplicaFetcherManager,name=MaxLag,clientId=Replica:Value': 'kafka.replica.MaxLag',
         'kafka.controller:type=KafkaController,name=ActiveControllerCount:Value': 'kafka.controller.ActiveControllerCount',
         'kafka.controller:type=KafkaController,name=OfflinePartitionsCount:Value': 'kafka.controller.OfflinePartitionsCount',
         'kafka.controller:type=ControllerStats,name=LeaderElectionRateAndTimeMs:Count': 'kafka.controller.LeaderElectionRateAndTimeMs.count',
