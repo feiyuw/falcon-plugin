@@ -11,10 +11,10 @@ ENDPOINT = socket.getfqdn()
 STEP = 60
 TYPE_GAUGE = 'GAUGE'
 KAFKA_HOME = '/opt/prismcdn/kafka'
-JMX_CMD = ['bin/kafka-run-class.sh', 'kafka.tools.JmxTool',
+JMX_CMD = ' '.join(['bin/kafka-run-class.sh', 'kafka.tools.JmxTool',
         '--object-name', '"kafka.*:type=*,name=*"',
         '--object-name', '"kafka.network:type=*,name=*,request=*"',
-        '--object-name', '"kafka.server:type=*"']
+        '--object-name', '"kafka.server:type=*"'])
 
 
 OBJECT_NAMES = {
@@ -31,7 +31,7 @@ OBJECT_NAMES = {
         # 'kafka.server:type=ProducerRequestPurgatory,name=PurgatorySize',
         # 'kafka.server:type=FetchRequestPurgatory,name=PurgatorySize',
         'kafka.server:type=BrokerTopicMetrics,name=BytesInPerSec:Count': 'kafka.BrokerTopicMetrics.BytesInPerSec.count',
-        'kafka.server:type=BrokerTopicMetrics,name=BytesOutPerSec': 'kafka.BrokerTopicMetrics.BytesOutPerSec.count',
+        'kafka.server:type=BrokerTopicMetrics,name=BytesOutPerSec:Count': 'kafka.BrokerTopicMetrics.BytesOutPerSec.count',
         'kafka.server:type=Fetch:queue-size': 'kafka.server.fetch.queue.size',
         'kafka.server:type=Produce:queue-size': 'kafka.server.produce.queue.size',
         }
@@ -44,7 +44,7 @@ class KafkaJMXMetrics(object):
         print(json.dumps(data))
 
     def _query_jmx(self):
-        p = subprocess.Popen(JMX_CMD, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=KAFKA_HOME)
+        p = subprocess.Popen(JMX_CMD, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=KAFKA_HOME, shell=True)
         try:
             header = p.stdout.readline()
             row = p.stdout.readline()
