@@ -10,7 +10,7 @@ from kafka.consumer import KafkaConsumer
 
 ENDPOINT = socket.getfqdn()
 SERVER = '%s:9092' % ENDPOINT
-STEP = 60
+STEP = 300
 TYPE_GAUGE = 'GAUGE'
 
 
@@ -31,7 +31,7 @@ class KafkaMetrics(object):
                 for item in items:
                     data.append(item)
 
-        print json.dumps(data)
+        print(json.dumps(data))
 
     def get_brokers_total(self):
         metric = 'kafka.brokers.total'
