@@ -15,7 +15,9 @@ KAFKA_HOME = '/opt/prismcdn/kafka'
 JMX_CMD = ' '.join(['bin/kafka-run-class.sh', 'kafka.tools.JmxTool',
         '--object-name', '"kafka.*:type=*,name=*"',
         '--object-name', '"kafka.network:type=*,name=*,request=*"',
-        '--object-name', '"kafka.server:type=*"'])
+        '--object-name', '"kafka.server:type=*"',
+        '--object-name', '"kafka.server:type=ReplicaFetcherManager,name=MaxLag,clientId=Replica"',
+        ])
 
 
 OBJECT_NAMES = {
