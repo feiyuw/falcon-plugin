@@ -10,6 +10,7 @@ import subprocess
 ENDPOINT = socket.getfqdn()
 STEP = 60
 TYPE_GAUGE = 'GAUGE'
+TYPE_COUNTER = 'COUNTER'
 KAFKA_HOME = '/opt/prismcdn/kafka'
 JMX_CMD = ' '.join(['bin/kafka-run-class.sh', 'kafka.tools.JmxTool',
         '--object-name', '"kafka.*:type=*,name=*"',
@@ -55,7 +56,7 @@ class KafkaJMXMetrics(object):
         records = row.split(',')
         for obj_name, metric in OBJECT_NAMES.iteritems():
             value = records[object_names.index(obj_name)]
-            yield self._build_metric(metric, value)
+            yield self._build_metric(metric, value, obj_name.endswith(':Count') and TYPE_COUNTER or TYPE_GAUGE)
 
     def _build_metric(self, metric, value, counter_type=TYPE_GAUGE, tags=''):
         return {
