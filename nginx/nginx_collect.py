@@ -300,7 +300,7 @@ class RenderErrRate(Render):
                 ec = Render.hash_default_get(d, RenderErrCount.metric, 0)
                 total = qc + ec
 
-                res.append(Render.pack(RenderErrRate.metric, {'api': api, 'service': service}, 100.0 if total == 0 else float(ec)/total))
+                res.append(Render.pack(RenderErrRate.metric, {'api': api, 'service': service}, 0.0 if total == 0 else float(ec)/total))
 
         return res
 
