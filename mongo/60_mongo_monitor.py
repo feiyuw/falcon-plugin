@@ -51,18 +51,30 @@ COUNTER_METRICS = [
         'network_numRequests',
         'backgroundFlushing_flushes',
         'backgroundFlushing_last_ms',
-        'commands_insert',
-        'commands_find',
-        'commands_findAndModify',
-        'commands_update',
-        'commands_drop',
-        'commands_distinct',
-        'commands_delete',
-        'commands_count',
-        'commands_aggregate',
-        'commands_mapReduce',
-        'commands_getnonce',
-        'commands_getMore',
+        'commands_insert_failed',
+        'commands_insert_total',
+        'commands_find_failed',
+        'commands_find_total',
+        'commands_findAndModify_failed',
+        'commands_findAndModify_total',
+        'commands_update_failed',
+        'commands_update_total',
+        'commands_drop_failed',
+        'commands_drop_total',
+        'commands_distinct_failed',
+        'commands_distinct_total',
+        'commands_delete_failed',
+        'commands_delete_total',
+        'commands_count_failed',
+        'commands_count_total',
+        'commands_aggregate_failed',
+        'commands_aggregate_total',
+        'commands_mapReduce_failed',
+        'commands_mapReduce_total',
+        'commands_getnonce_failed',
+        'commands_getnonce_total',
+        'commands_getMore_failed',
+        'commands_getMore_total',
         'document_deleted',
         'document_inserted',
         'document_returned',
@@ -145,7 +157,8 @@ class MongoMonitor(object):
         # metrics
         # commands
         for cmd in ('insert', 'find', 'findAndModify', 'update', 'drop', 'distinct', 'delete', 'count', 'aggregate', 'mapReduce', 'getnonce', 'getMore'):
-            yield ('commands_'+cmd, server_status['metrics']['commands'][cmd])
+            for field in ('failed', 'total'):
+                yield ('commands_'+cmd+'_'+field, server_status['metrics']['commands'][cmd][field])
         # document
         for k, v in server_status['metrics']['document'].iteritems():
             yield ('document_'+k, v)
