@@ -92,7 +92,7 @@ class MongoMonitor(object):
             for (metric, value) in self._parse_server_status(server_status):
                 data.append(self._build_metric(metric, value, ts))
         except ServerSelectionTimeoutError:
-            data.append(self._build_metric('mongo_local_alive', int(server_status['ok']), ts))
+            data.append(self._build_metric('mongo_local_alive', 0, ts))
 
         print(json.dumps(data))
 
