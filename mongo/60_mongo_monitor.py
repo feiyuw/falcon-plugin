@@ -11,7 +11,6 @@ STEP = 60
 TYPE_GAUGE = 'GAUGE'
 TYPE_COUNTER = 'COUNTER'
 COUNTER_METRICS = [
-        'mongo_uptime',
         'asserts_msg',
         'asserts_regular',
         'asserts_rollovers',
