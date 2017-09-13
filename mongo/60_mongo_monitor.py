@@ -47,6 +47,8 @@ COUNTER_METRICS = [
         'opcountersRepl_getmore',
         'network_bytesIn',
         'network_bytesOut',
+        'network_physicalBytesIn',
+        'network_physicalBytesOut',
         'network_numRequests',
         'backgroundFlushing_flushes',
         'backgroundFlushing_last_ms',
