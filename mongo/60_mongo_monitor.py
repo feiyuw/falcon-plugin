@@ -11,6 +11,7 @@ STEP = 60
 TYPE_GAUGE = 'GAUGE'
 TYPE_COUNTER = 'COUNTER'
 COUNTER_METRICS = [
+        'slow_queries',
         'asserts_msg',
         'asserts_regular',
         'asserts_rollovers',
@@ -90,20 +91,31 @@ COUNTER_METRICS = [
         'wt_bm_blocks_read',
         'wt_bm_blocks_written']
 
+_EXCLUDED_DBS = ('admin', 'local', 'test')
+
 
 class MongoMonitor(object):
     def __init__(self, host='mongodb://127.0.0.1:27017'):
-        self.db = MongoClient('mongodb://127.0.0.1:27017').admin
+        self.client = MongoClient('mongodb://127.0.0.1:27017')
+        self.adminDB = self.client.admin
 
 
     def run(self):
         data = []
         try:
             ts = int(time.time())
-            server_status = self.db.command('serverStatus')
+            server_status = self.adminDB.command('serverStatus')
             data.append(self._build_metric('mongo_local_alive', 1, ts))
             for (metric, value) in self._parse_server_status(server_status):
                 data.append(self._build_metric(metric, value, ts))
+            total_slow_queries = 0
+            for db in self.client.database_names():
+                if db in _EXCLUDED_DBS:
+                    continue
+                db_slow_queries = self.client[db].system.profile.count()
+                total_slow_queries += db_slow_queries
+                data.append(self._build_metric('slow_queries', db_slow_queries, ts, 'db='+db))
+            data.append(self._build_metric('slow_queries', total_slow_queries, ts, 'db=_all_'))
         except ServerSelectionTimeoutError:
             data.append(self._build_metric('mongo_local_alive', 0, ts))
 
